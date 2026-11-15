@@ -1,14 +1,10 @@
+"""Kept for the old usage: python cli/restore_tabs.py [--file F]"""
 
-import json
-import subprocess
+import sys
+from pathlib import Path
 
-with open("chrome_tabs_backup.json", "r") as f:
-    tabs = json.load(f)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-for tab in tabs:
-    subprocess.run([
-        "osascript", "-e",
-        f'tell application "Google Chrome" to open location "{tab["url"]}"'
-    ])
+from tabops.cli import main  # noqa: E402
 
-print(f"🔁 Restored {len(tabs)} tabs to Chrome")
+sys.exit(main(["restore", *sys.argv[1:]]))

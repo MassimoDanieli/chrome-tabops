@@ -1,24 +1,30 @@
-
 name: Python CI
 
 on:
+  # The default branch is "develop": the old filter on "main" meant CI never ran.
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.13"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: |
-          pip install flake8
+          python-version: ${{ matrix.python-version }}
+      - name: Install tools
+        run: pip install flake8 pytest
       - name: Lint
-        run: |
-          flake8 cli/ gui/ scripts/
+        run: flake8 cli/ gui/ tabops/ tests/
+      # osascript is mocked: the tests run on Linux.
+      - name: Test
+        run: pytest -q
