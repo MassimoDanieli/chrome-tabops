@@ -1,10 +1,10 @@
 name: Python CI
 
 on:
+  # The default branch is "develop": the old filter on "main" meant CI never ran.
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
 
 permissions:
   contents: read
