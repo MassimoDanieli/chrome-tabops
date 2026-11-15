@@ -1,23 +1,10 @@
+"""Kept for the old usage: python cli/save_tabs.py [--close] [--file F]"""
 
-import json
-import subprocess
-import platform
 import sys
-from scripts.macos_applescript import get_tabs_macos
+from pathlib import Path
 
-OS = platform.system()
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-if OS != "Darwin":
-    print("This script currently supports macOS only.")
-    sys.exit(1)
+from tabops.cli import main  # noqa: E402
 
-print("🔄 Saving Chrome tabs...")
-tabs = get_tabs_macos()
-
-with open("chrome_tabs_backup.json", "w") as f:
-    json.dump(tabs, f, indent=2)
-
-print(f"✅ Saved {len(tabs)} tabs to chrome_tabs_backup.json")
-
-subprocess.run(["osascript", "-e", 'tell application "Google Chrome" to close windows'])
-print("🧨 All Chrome windows closed.")
+sys.exit(main(["save", *sys.argv[1:]]))

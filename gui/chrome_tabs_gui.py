@@ -1,32 +1,40 @@
+"""Small Tk window with Save / Restore buttons."""
 
+import sys
 import tkinter as tk
-from scripts.macos_applescript import get_tabs_macos
-import subprocess
-import json
+from pathlib import Path
 
-root = tk.Tk()
-root.title("Chrome TabOps")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-status = tk.Label(root, text="Ready", fg="green")
-status.pack()
+from tabops import chrome, store  # noqa: E402
 
-def save_tabs():
-    tabs = get_tabs_macos()
-    with open("chrome_tabs_backup.json", "w") as f:
-        json.dump(tabs, f, indent=2)
-    status.config(text=f"Saved {len(tabs)} tabs")
 
-def restore_tabs():
-    with open("chrome_tabs_backup.json", "r") as f:
-        tabs = json.load(f)
-    for tab in tabs:
-        subprocess.run([
-            "osascript", "-e",
-            f'tell application "Google Chrome" to open location "{tab["url"]}"'
-        ])
-    status.config(text=f"Restored {len(tabs)} tabs")
+def main():
+    root = tk.Tk()
+    root.title("Chrome TabOps")
+    status = tk.Label(root, text="Ready", fg="green")
+    status.pack()
 
-tk.Button(root, text="Save Tabs", command=save_tabs).pack(pady=10)
-tk.Button(root, text="Restore Tabs", command=restore_tabs).pack(pady=10)
+    def save_tabs():
+        tabs = chrome.get_tabs()
+        store.save(tabs)
+        status.config(text=f"Saved {len(tabs)} tabs", fg="green")
 
-root.mainloop()
+    def restore_tabs():
+        try:
+            urls, skipped = store.safe_urls(store.load())
+        except FileNotFoundError:
+            status.config(text="No backup yet: save first", fg="red")
+            return
+        for url in urls:
+            chrome.open_url(url)
+        note = f" ({len(skipped)} skipped)" if skipped else ""
+        status.config(text=f"Restored {len(urls)} tabs{note}", fg="green")
+
+    tk.Button(root, text="Save Tabs", command=save_tabs).pack(pady=10)
+    tk.Button(root, text="Restore Tabs", command=restore_tabs).pack(pady=10)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

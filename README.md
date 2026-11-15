@@ -1,22 +1,38 @@
-
 # Chrome TabOps
 
-Save and restore your Google Chrome tabs across macOS, Windows, and Linux.
+[![Python CI](https://github.com/MassimoDanieli/chrome-tabops/actions/workflows/python-ci.yml/badge.svg)](https://github.com/MassimoDanieli/chrome-tabops/actions/workflows/python-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
-- Save all open Chrome tabs to JSON
-- Restore saved tabs
-- CLI and GUI mode
-- macOS support via AppleScript (Windows/Linux WIP)
+Save and restore your Google Chrome tabs. No external dependencies.
 
 ## Usage
+
 ```bash
-python cli/save_tabs.py
-python cli/restore_tabs.py
-python gui/chrome_tabs_gui.py
+python -m tabops save                 # every open tab → chrome_tabs_backup.json
+python -m tabops save --close         # …and then close all Chrome windows
+python -m tabops restore              # reopen them
+python -m tabops save --file ~/tabs.json
+
+python gui/chrome_tabs_gui.py         # small window with Save / Restore
 ```
 
-## Coming soon
-- Windows and Linux support
-- Packaged version via PyInstaller
-- ArgoCD pipeline for deployment
+The old commands still work: `python cli/save_tabs.py [--close]`, `python cli/restore_tabs.py`.
+
+On restore, only `http`, `https`, `chrome` and `about` URLs are reopened; anything
+else in the file (`javascript:`, `file:` …) is skipped and counted.
+
+## Platform support
+
+| Platform | Supported |
+|----------|-----------|
+| macOS    | ✅ Yes (AppleScript) |
+| Windows  | ⏳ Not yet |
+| Linux    | ⏳ Not yet |
+
+## Development
+
+```bash
+pip install flake8 pytest
+flake8 cli/ gui/ tabops/ tests/
+pytest -q        # osascript is mocked, runs on any OS
+```
